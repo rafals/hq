@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+	<head>
+		<script src="/jquery.js"></script>
+		<script src="/jquery.flot.js"></script>
+		<script src="/jquery.flot.stack.js"></script>
+		<script src="/underscore.js"></script>
+		<script src="/socket.io/socket.io.js"></script> 
+		<link href="/style.css" rel="stylesheet" type="text/css" />
+		<script>
+			$(function() {
+				$('body').append('<div id="tooltip">&nbsp;</div>');
+				
+				// REAL TIME
+				var socket = new io.Socket('192.168.1.5'); 
+        socket.connect();
+        
+        var memory = {};
+        
+        memory.software = [];
+        memory.protection = [];
+        memory.speedup = [];
+        memory.total = [];
+        
+        for(var i = -30; i < 0; i++) {
+          memory.software.push([i, -1]);
+          memory.protection.push([i, -1]);
+          memory.speedup.push([i, -1]);
+          memory.total.push([i, -1]);
+        }
+      
+        var tick = 0;
+        
+        socket.on('message', function(message){
+          
+          $('#memory .software').animate({width: Math.round(100*((message.total - message.free - message.buffers - message.cached)/message.total)) + '%'}, 1000);
+          $('#memory .protection').animate({width: Math.round(100*message.dirty / message.total) + '%'}, 1000);
+          $('#memory .speedup').animate({width: Math.round(100*(message.buffers + message.cached - message.dirty) / message.total) + '%'}, 1000);
+          /*
+          memory.software.push([tick, message.total - message.free - message.buffers - message.cached]);
+          memory.software.shift();
+          memory.protection.push([tick, message.dirty]);
+          memory.protection.shift();
+          memory.speedup.push([tick, message.buffers + message.cached - message.dirty]);
+          memory.speedup.shift();
+          memory.total.push([tick, message.total]);
+          memory.total.shift();
+          
+          tick ++;
+          var sample = [[[0,1], [1,2], [2,3]], [[0,2], [1,4], [2,8]]];
+          var data = [{data: memory.software, color: '#000'}, {data: memory.protection, color: 'red'}, {data: memory.speedup, color: '#ddd'}];
+          var bars = false, lines = true, steps = true;
+          var stack = 0;
+          
+          $.plot($("#memory-chart"), data, {
+                      series: {
+                          stack: stack,
+                          lines: { show: lines, fill: true, steps: steps },
+                          bars: { show: bars, barWidth: 0.6 }
+                      },
+                      yaxis: {
+                        min: 0,
+                        max: message.total
+                      }
+                  });                                      
+                  */
+        });
+				//
+					
+				function round(number, decimal_places) {
+					return Math.round(number * Math.pow(10, decimal_places))/ Math.pow(10, decimal_places);
+				}
+							
+				function getParameterByName( name ) {
+					name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+					var regexS = "[\\?&]"+name+"=([^&#]*)";
+					var regex = new RegExp( regexS );
+					var results = regex.exec( window.location.href );
+					if( results == null )
+						return "";
+					else
+						return decodeURIComponent(results[1].replace(/\+/g, " "));
+				}
+			
+				var error = getParameterByName('error');
+				if(error) {
+					alert(error);
+				}
+				
+				$.ajax({url: '/memory', method: 'GET', success: function(memory) {
+					var software = memory.total - memory.free - (memory.cached + memory.buffers);
+					var speedup = (memory.cached + memory.buffers - memory.dirty);
+					var protection = memory.dirty;
+					$("#memory").append('<span class="category">memory</span> <div class="indicator"><span class="software" style="width: '+ Math.round(100*software/memory.total) +'%">&nbsp;</span><span class="protection" style="width: '+ Math.round(100*protection/memory.total) +'%">&nbsp;</span><span class="speedup" style="width: '+ Math.round(100*speedup/memory.total) +'%">&nbsp;</span></div>');
+				}});
+				
+				$.ajax({url: '/packages', method: 'GET', success: function(packages) {
+					_(packages).each(function(val, key) {
+						
+						var group = _(val).map(function(name) { return '<li>' + name + '</li>'; }).join("\n");
+					
+						$("#packages").append('<div><span class="category">'+ key +'</span> <ul>'+ group +'</ul></div>');
+					});
+				}});
+				
+				$.ajax({url: '/devices', method: 'GET', success: function(devices) {
+					
+					var devices = devices.sort(function(a, b) {
+						var res = 0;
+						if (a.label) { res -= 10; }
+						if (b.label) { res += 10; }
+						res += (a.mountpoint > b.mountpoint) ? 5 : -5;
+						return res;
+					});
+					
+					var total_max = 0;
+				_(devices).each(function(device) {
+						if (device.total > total_max) total_max = device.total;
+					});
+					
+					_(devices).each(function(device) {
+						var overlay_data = '';
+						total = '';
+						if(device.available) {
+							var free = device.available/1024;
+							var total = device.total/1024;
+						var used = device.used/1024;
+							
+							if (used > 1024) {
+								used /= 1024;
+								overlay_data += Math.round(used) + 'G';
+							} else {
+								overlay_data += Math.round(used);
+							}	
+							
+							overlay_data += ' : ';
+					
+							if (free > 1024) {
+							free /= 1024;
+								overlay_data += Math.round(free) + 'G';
+							} else {
+								overlay_data += Math.round(free);
+							}
+
+//							overlay_data += ' / ';
+//
+//							if (total > 1024) {
+//								total /= 1024;
+//								overlay_data += Math.round(total) + 'G';
+//							} else {
+//								overlay_data += Math.round(total);
+//							}
+							if (total > 1024) { total = Math.round(total / 1024) +'G' } else total = Math.round(total);
+						}
+						var eventual_alert = (device.used / (device.used + device.available) > 0.8) ? ' alert' : '';
+						var used = device.available ? '<div class="indicator'+ eventual_alert +'" style="width: '+ Math.log(device.total)/Math.log(total_max)*110 +'%" data-overlay="'+ overlay_data +'"><div style="width: '+ Math.round(100*device.used/(device.used + device.available)) +'%">&nbsp;</div></div>' : "";
+					var url = '/' + ( device.mounted ? 'umount' : 'mount' ) + '?mountpoint=' + device.mountpoint;
+						
+						var icon = (device.mounted ? '<img class="connected" src="/icons/transparent.png" alt="" />' : '<img class="disconnected" src="/icons/transparent.png" alt="" />');
+						var passive_icon = (device.mounted ? '<img class="connected_passive" src="/icons/transparent.png" alt="" />' : '<img class="disconnected_passive" src="/icons/transparent.png" alt="" />');
+						
+						$('#devices table').append("<tr id='" + device.mountpoint + "'><td class='label'>" + (device.label || "") + "</td><td class='mountpoint'>" + device.mountpoint + "</td><td class='type'>" + device.type	+ "</td><td class='mounted'>" + (device.label ? ("<a class='mounted' href='" + url + "'>" + icon + "</a>") : passive_icon ) + "</td><!--<td>"+ total +"</td>--><td>" + used + "</td></tr>");
+					});
+					
+					$('#devices table .indicator[data-overlay]').each( function(index, indicator) {
+						indicator = $(indicator)
+						var overlay = indicator.attr('data-overlay');
+						$('#devices').append('<div class="overlay" style="position: absolute; top: '+ indicator.position().top +'px; left: '+ indicator.position().left +'px; width: '+ indicator.width() +'px; height: '+ indicator.height() +'px">'+ overlay +'</div>');
+					});
+				}});
+
+				$.ajax({url: '/services', method: 'GET', success: function(services) {
+					_(services).each(function(service) {
+						var status = service.running ? '<div class="status started"><a href="/stop/' + service.name + '"><img src="/icons/bolt.png" /></a></div>' : '<div class="status stopped"><a href="/start/' + service.name + '"><img src="/icons/clock.png" /></a></div>';
+						$("#services").append('<div class="service" id="service-' + service.name +'"><div class="name">' + service.name + '</div>' + status + '</div>');
+					});
+				}});
+				
+			});
+		</script>
+		<link rel="shortcut icon" href="/icons/bolt.png" type="image/png" />
+		<title>Appload HQ</title>
+	</head>
+	<body>
+	  <!--<div id="memory-chart" style="width:550px;height:300px;"></div>-->
+		<div id="memory"></div>
+		<div id="devices">
+			<table></table>
+		</div>
+		<div id="packages"></div>
+		<div id="services"></div>
+		
+	</body>
+</html>
+

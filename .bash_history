@@ -82,3 +82,36 @@ ls -l
 /etc/init.d/hq restart
 su
 sudo su
+cd
+git status
+git add .
+git commit -a -m "hq, dodatki"
+git push
+cd
+git show app.js 
+git show public/index.html > kot
+cat kot 
+su
+su
+cd
+git show public/style.css 
+git show public/style.css > public/style.css 
+git show public/style.css > public/style.csss
+ls
+cd public/
+ls -l
+cd
+ls
+cd public/
+ls
+mv style.csss style.css
+ls
+cd
+ls
+cd
+git show public/index.html 
+git show public/index.html > public/index.html 
+git show public/index.html > public/index.htmll
+cd
+ls
+git show public/style.css 

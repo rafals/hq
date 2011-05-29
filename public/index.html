@@ -10,8 +10,8 @@
 			$(function() {
 				$('body').append('<div id="tooltip">&nbsp;</div>');
 				
-				// REAL TIME
-				var socket = new io.Socket('192.168.1.5'); 
+/*				// REAL TIME
+			var socket = new io.Socket('192.168.1.5'); 
         socket.connect();
         
         var memory = {};
@@ -31,10 +31,13 @@
         var tick = 0;
         
         socket.on('message', function(message){
-          
+
           $('#memory .software').animate({width: Math.round(100*((message.total - message.free - message.buffers - message.cached)/message.total)) + '%'}, 1000);
           $('#memory .protection').animate({width: Math.round(100*message.dirty / message.total) + '%'}, 1000);
           $('#memory .speedup').animate({width: Math.round(100*(message.buffers + message.cached - message.dirty) / message.total) + '%'}, 1000);
+          
+          */
+          
           /*
           memory.software.push([tick, message.total - message.free - message.buffers - message.cached]);
           memory.software.shift();
@@ -62,9 +65,9 @@
                         max: message.total
                       }
                   });                                      
-                  */
+                  
         });
-				//
+				*/
 					
 				function round(number, decimal_places) {
 					return Math.round(number * Math.pow(10, decimal_places))/ Math.pow(10, decimal_places);
@@ -101,6 +104,17 @@
 						$("#packages").append('<div><span class="category">'+ key +'</span> <ul>'+ group +'</ul></div>');
 					});
 				}});
+				
+				watched = ['http://koliber.vroc.pl', 'http://maciek.wroclaw.pl', 'http://eldesign.eu', 'http://fotowrocek.pl', 'http://aegee.wroclaw.pl', 'http://reader.appload.pl/get/']
+				
+				_(watched.sort()).each(function(value, key) {
+					$('#status').append('<div id="status_'+ key +'" class="failed">'+ value.slice(7) +'</div>');
+					$.ajax({url: '/ping?url="'+ value +'"', method: 'GET', success: function(answer) {
+						if (answer.alive) {
+							$('#status_'+ key).removeClass('failed').addClass('alive');
+						}
+					}});
+				});
 				
 				$.ajax({url: '/devices', method: 'GET', success: function(devices) {
 					
@@ -183,11 +197,12 @@
 	<body>
 	  <!--<div id="memory-chart" style="width:550px;height:300px;"></div>-->
 		<div id="memory"></div>
+		<div id="status"></div>
 		<div id="devices">
 			<table></table>
 		</div>
-		<div id="packages"></div>
 		<div id="services"></div>
+		<div id="packages"></div>
 		
 	</body>
 </html>

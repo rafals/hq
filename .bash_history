@@ -115,3 +115,11 @@ git show public/index.html > public/index.htmll
 cd
 ls
 git show public/style.css 
+cd
+git add .
+git commit -a -m "po utracie danych"
+git push
+cd
+ls
+git pull
+git status

@@ -3,29 +3,30 @@ table { width: 100%; }
 html, table { font-family: DejaVu Sans, sansserif; font-size: 13px; }
 td { padding: 2px 10px; }
 
-#memory, #memorychart, #devices, #packages, #services {
+#memory, #memorychart, #devices, #packages, #services, #status {
 	width: 550px;
 	margin: 28px auto;
 	padding: 20px 16px;
-	border: 1px solid #f6f6f6;
+	border: 1px solid #f9f9f9;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 	border-radius: 5px;
 }
 
-#services {
+#services, #status {
 	width: 225px;
 }
 
 #memory .indicator {
 	width: 460px;
-	border: 1px solid #ddd;
+	border: 1px solid #ccc;
 	display: inline-block;
+	height: 17px;
 }
 
 #memory .category {
 	padding-right: 6px;
-	color: #ddd;
+	color: #ccc;
 }
 
 #memory .indicator span {
@@ -34,11 +35,11 @@ td { padding: 2px 10px; }
 
 #memory .indicator .speedup {
 	background-color: transparent;
-	borderright: 1px solid #00ff00;
+	border-right: 1px solid #00ff00;
 }
 
 #memory .indicator .software {
-	background-color: #ddd;
+	background-color: #ccc;
 }
 
 #memory .indicator .protection {
@@ -48,17 +49,17 @@ td { padding: 2px 10px; }
 
 #devices table tr td:nth-child(1) { width: 60px; text-align: right; }
 #devices table tr td:nth-child(2) { white-space: nowrap; }
-#devices table tr td:nth-child(3) { width: 1px; text-align: center; color: #ddd; }
+#devices table tr td:nth-child(3) { width: 1px; text-align: center; color: #ccc; }
 #devices table tr td:nth-child(4) { width: 1px; text-align: center; }
-/*#devices table tr td:nth-child(5) { width: 1px; text-align: right; color: #ddd; }*/
-#devices table tr td:nth-child(5) { width: 400px; text-align: center; color: #ddd; }
+/*#devices table tr td:nth-child(5) { width: 1px; text-align: right; color: #ccc; }*/
+#devices table tr td:nth-child(5) { width: 400px; text-align: center; color: #ccc; }
 
 #devices .indicator {
-	border: 1px solid #ddd;
+	border: 1px solid #ccc;
 	width: 120px;
 }
 
-#devices .indicator > div { background-color: #ddd; }
+#devices .indicator > div { background-color: #ccc; }
 
 #devices .connected, #devices .disconnected, #devices .connected_passive, #devices .disconnected_passive {
 	width: 16px; height: 16px;
@@ -76,13 +77,13 @@ td { padding: 2px 10px; }
 #packages li { padding-right: 6px; }
 
 #packages .category {
-	color: #ddd;
+	color: #ccc;
 	text-align: right;
 	padding-right: 6px;
 }
 
 #packages .category {
-	width: 150px;
+	width: 160px;
 	display: block;
 	float: left;
 }
@@ -113,4 +114,17 @@ td { padding: 2px 10px; }
 	background-color: #000000;
 }
 
+#status div {
+	padding: 2px;
+	padding-right: 36px;
+	text-align: right;
+}
+
+#status .failed {
+	background: url(/icons/clock.png) no-repeat 200px 2px;
+}
+
+#status .alive {
+	background: url(/icons/bolt.png) no-repeat 200px 2px;
+}
 

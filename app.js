@@ -4,7 +4,7 @@ var exec = require('child_process').exec;
 var sys = require('sys');
 var _ = require('underscore');
 var io = require('socket.io');
-
+var request = require('request');
 
 app.configure(function(){
   // Dane przesłane `POST`em są parsowane i dostępne jako hash javascriptowy.
@@ -250,7 +250,7 @@ app.get('/start/:service', function(req, res, next) {
 });
 
 app.get('/stop/:service', function(req, res, next) {
-  if (req.params.service === "net.eth0") {
+  if (req.params.service === "net.eth0" || req.params.service === "hq") {
     res.send('nie');
   } else {
     exec('sudo /etc/init.d/' + req.params.service + ' stop', function(error, stdout, stderr) {
@@ -277,6 +277,16 @@ app.get('/restart/:service', function(req, res, next) {
       }
     } else {
       res.redirect('/');
+    }
+  });
+});
+
+app.get('/ping', function(req, res, next) {
+  request({uri:req.query.url}, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      res.send({alive: true}, 200);
+    } else {
+      res.send({alive: false}, 500);
     }
   });
 });

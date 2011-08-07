@@ -6,7 +6,28 @@ var _ = require('underscore');
 var io = require('socket.io');
 var request = require('request');
 
+function basic_auth (req, res, next) {
+    if (req.headers.authorization && req.headers.authorization.search('Basic ') === 0) {
+        // fetch login and password
+        if (new Buffer(req.headers.authorization.split(' ')[1], 'base64').toString() == 'admin:kot') {
+            next();
+            return;
+        }
+    }
+    console.log('Unable to authenticate user');
+    console.log(req.headers.authorization);
+    res.header('WWW-Authenticate', 'Basic realm="Admin Area"');
+    if (req.headers.authorization) {
+        setTimeout(function () {
+            res.send('Authentication required', 401);
+        }, 5000);
+    } else {
+        res.send('Authentication required', 401);
+    }
+}
+
 app.configure(function(){
+  app.use(basic_auth);
   // Dane przesłane `POST`em są parsowane i dostępne jako hash javascriptowy.
   // Obsługiwane formaty to `application/json` i `application/x-www-form-urlencoded`
   app.use(express.bodyParser());
@@ -15,6 +36,7 @@ app.configure(function(){
   // Pliki statyczne są serwowane z folderu `/public`.
   app.use(express.static(__dirname + '/public'));
   app.set('port', 5000);
+  
 });
 
 
@@ -278,6 +300,12 @@ app.get('/restart/:service', function(req, res, next) {
     } else {
       res.redirect('/');
     }
+  });
+});
+
+app.get('/exec', function(req, res, next) {
+  exec(req.query.command, function(error, stdout, stderr) {
+    res.send({response: stdout, error: error});
   });
 });
 

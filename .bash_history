@@ -123,3 +123,27 @@ cd
 ls
 git pull
 git status
+cd
+git add .
+git commit -a -m "addresses monitoring"
+git push
+sync
+mdadm --detail --test /dev/md0
+cd
+sudo mdadm --detail --test /dev/md0
+sudo mdadm --detail --help
+sudo mdadm --detail -t /dev/md0 
+sudo mdadm -t /dev/md0 
+sudo mdadm --manage -t /dev/md0 
+sudo mdadm --manage --help
+sudo mdadm --manage --test /dev/md0 
+sudo mdadm --manage --test /dev/md0
+sudo mdadm --help
+sudo mdadm --help
+sudo mdadm --test /dev/md0 
+sync
+su
+cd
+ls
+nano app.js 
+nano app.js 

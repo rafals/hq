@@ -1,17 +1,33 @@
 <!DOCTYPE html>
-	<head>
-		<script src="/jquery.js"></script>
-		<script src="/jquery.flot.js"></script>
-		<script src="/jquery.flot.stack.js"></script>
-		<script src="/underscore.js"></script>
-		<script src="/socket.io/socket.io.js"></script> 
-		<link href="/style.css" rel="stylesheet" type="text/css" />
-		<script>
-			$(function() {
-				$('body').append('<div id="tooltip">&nbsp;</div>');
-				
-/*				// REAL TIME
-			var socket = new io.Socket('192.168.1.5'); 
+  <head>
+    <script src="/jquery.js"></script>
+    <script src="/jquery.flot.js"></script>
+    <script src="/jquery.flot.stack.js"></script>
+    <script src="/underscore.js"></script>
+    <script src="/socket.io/socket.io.js"></script> 
+    
+    <link rel="stylesheet" href="lib/codemirror/codemirror.css">
+    <link rel="stylesheet" href="lib/codemirror/default.css">
+    <link rel="stylesheet" href="lib/codemirror/night.css">
+    <script src="lib/codemirror/codemirror.js"></script>
+    <script src="lib/codemirror/clike.js"></script>
+
+    <style type="text/css">
+      .activeline { background: #0e002c !important; }
+      .CodeMirror-scroll {
+        height: auto;
+        overflow-y: hidden;
+        overflow-x: auto;
+      }
+    </style>
+
+    <link href="/style.css" rel="stylesheet" type="text/css" />
+    <script>
+      $(function() {
+      $('<div id="tooltip">&nbsp;</div>').insertAfter('#packages');
+        
+/*        // REAL TIME
+      var socket = new io.Socket('192.168.1.5'); 
         socket.connect();
         
         var memory = {};
@@ -67,143 +83,502 @@
                   });                                      
                   
         });
-				*/
-					
-				function round(number, decimal_places) {
-					return Math.round(number * Math.pow(10, decimal_places))/ Math.pow(10, decimal_places);
-				}
-							
-				function getParameterByName( name ) {
-					name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-					var regexS = "[\\?&]"+name+"=([^&#]*)";
-					var regex = new RegExp( regexS );
-					var results = regex.exec( window.location.href );
-					if( results == null )
-						return "";
-					else
-						return decodeURIComponent(results[1].replace(/\+/g, " "));
-				}
-			
-				var error = getParameterByName('error');
-				if(error) {
-					alert(error);
-				}
-				
-				$.ajax({url: '/memory', method: 'GET', success: function(memory) {
-					var software = memory.total - memory.free - (memory.cached + memory.buffers);
-					var speedup = (memory.cached + memory.buffers - memory.dirty);
-					var protection = memory.dirty;
-					$("#memory").append('<span class="category">memory</span> <div class="indicator"><span class="software" style="width: '+ Math.round(100*software/memory.total) +'%">&nbsp;</span><span class="protection" style="width: '+ Math.round(100*protection/memory.total) +'%">&nbsp;</span><span class="speedup" style="width: '+ Math.round(100*speedup/memory.total) +'%">&nbsp;</span></div>');
-				}});
-				
-				$.ajax({url: '/packages', method: 'GET', success: function(packages) {
-					_(packages).each(function(val, key) {
-						
-						var group = _(val).map(function(name) { return '<li>' + name + '</li>'; }).join("\n");
-					
-						$("#packages").append('<div><span class="category">'+ key +'</span> <ul>'+ group +'</ul></div>');
-					});
-				}});
-				
-				watched = ['http://koliber.vroc.pl', 'http://maciek.wroclaw.pl', 'http://eldesign.eu', 'http://fotowrocek.pl', 'http://aegee.wroclaw.pl', 'http://reader.appload.pl/get/']
-				
-				_(watched.sort()).each(function(value, key) {
-					$('#status').append('<div id="status_'+ key +'" class="failed">'+ value.slice(7) +'</div>');
-					$.ajax({url: '/ping?url="'+ value +'"', method: 'GET', success: function(answer) {
-						if (answer.alive) {
-							$('#status_'+ key).removeClass('failed').addClass('alive');
-						}
-					}});
-				});
-				
-				$.ajax({url: '/devices', method: 'GET', success: function(devices) {
-					
-					var devices = devices.sort(function(a, b) {
-						var res = 0;
-						if (a.label) { res -= 10; }
-						if (b.label) { res += 10; }
-						res += (a.mountpoint > b.mountpoint) ? 5 : -5;
-						return res;
-					});
-					
-					var total_max = 0;
-				_(devices).each(function(device) {
-						if (device.total > total_max) total_max = device.total;
-					});
-					
-					_(devices).each(function(device) {
-						var overlay_data = '';
-						total = '';
-						if(device.available) {
-							var free = device.available/1024;
-							var total = device.total/1024;
-						var used = device.used/1024;
-							
-							if (used > 1024) {
-								used /= 1024;
-								overlay_data += Math.round(used) + 'G';
-							} else {
-								overlay_data += Math.round(used);
-							}	
-							
-							overlay_data += ' : ';
-					
-							if (free > 1024) {
-							free /= 1024;
-								overlay_data += Math.round(free) + 'G';
-							} else {
-								overlay_data += Math.round(free);
-							}
+        */
+          
+        function round(number, decimal_places) {
+          return Math.round(number * Math.pow(10, decimal_places))/ Math.pow(10, decimal_places);
+        }
+              
+        function getParameterByName( name ) {
+          name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+          var regexS = "[\\?&]"+name+"=([^&#]*)";
+          var regex = new RegExp( regexS );
+          var results = regex.exec( window.location.href );
+          if( results == null )
+            return "";
+          else
+            return decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+      
+        var error = getParameterByName('error');
+        if(error) {
+          alert(error);
+        }
+        
+        $.ajax({url: '/memory', method: 'GET', success: function(memory) {
+          var software = memory.total - memory.free - (memory.cached + memory.buffers);
+          var speedup = (memory.cached + memory.buffers - memory.dirty);
+          var protection = memory.dirty;
+          $("#memory").append('<span class="category">memory</span> <div class="indicator"><span class="software" style="width: '+ Math.round(100*software/memory.total) +'%">&nbsp;</span><span class="protection" style="width: '+ Math.round(100*protection/memory.total) +'%">&nbsp;</span><span class="speedup" style="width: '+ Math.round(100*speedup/memory.total) +'%">&nbsp;</span></div>');
+        }});
+        
+        $.ajax({url: '/packages', method: 'GET', success: function(packages) {
+          _(packages).each(function(val, key) {
+            
+            var group = _(val).map(function(name) { return '<li>' + name + '</li>'; }).join("\n");
+          
+            $("#packages").append('<div><span class="category">'+ key +'</span> <ul>'+ group +'</ul></div>');
+          });
+        }});
 
-//							overlay_data += ' / ';
+        $.ajax({url: '/exec?command=sensors', method: 'GET', success: function(sensors) {
+          $("#sensors").html('temperatura <b>'+ sensors.response.split('\n')[2].substr(14, 2) +'<sup>o</sup></b>');
+          var alarm_count = sensors.response.split('ALARM').length -1;
+          if (alarm_count > 0)
+            $("#sensors").append(', alarmy czujników <b>'+ alarm_count +'</b>');
+        }});
+        
+        $.ajax({url: '/exec?command=sudo mdadm --detail /dev/md0', method: 'GET', success: function(storage) {
+          $("#storage").html('stan raid : <b>'+ storage.response.split('\n')[11].substr(-5) +'</b>');
+        }});
+        
+        
+        watched = ['http://flow.appload.pl', 'http://koliber.appload.pl', 'http://kanban.appload.pl', 'http://koliber.vroc.pl', 'http://maciek.wroclaw.pl', 'http://eldesign.eu', 'http://fotowrocek.pl', 'http://aegee.wroclaw.pl', 'http://reader.appload.pl/get/']
+        
+        _(watched.sort()).each(function(value, key) {
+          $('#status').append('<div id="status_'+ key +'" class="failed">'+ value.slice(7) +'</div>');
+          $.ajax({url: '/ping?url="'+ value +'"', method: 'GET', success: function(answer) {
+            if (answer.alive) {
+              $('#status_'+ key).removeClass('failed').addClass('alive');
+            }
+          }});
+        });
+        
+        $.ajax({url: '/devices', method: 'GET', success: function(devices) {
+          
+          var devices = devices.sort(function(a, b) {
+            var res = 0;
+            if (a.label) { res -= 10; }
+            if (b.label) { res += 10; }
+            res += (a.mountpoint > b.mountpoint) ? 5 : -5;
+            return res;
+          });
+          
+          var total_max = 0;
+        _(devices).each(function(device) {
+            if (device.total > total_max) total_max = device.total;
+          });
+          
+          _(devices).each(function(device) {
+            var overlay_data = '';
+            total = '';
+            if(device.available) {
+              var free = device.available/1024;
+              var total = device.total/1024;
+            var used = device.used/1024;
+              
+              if (used > 1024) {
+                used /= 1024;
+                overlay_data += Math.round(used) + 'G';
+              } else {
+                overlay_data += Math.round(used);
+              }  
+              
+              overlay_data += ' : ';
+          
+              if (free > 1024) {
+              free /= 1024;
+                overlay_data += Math.round(free) + 'G';
+              } else {
+                overlay_data += Math.round(free);
+              }
+
+//              overlay_data += ' / ';
 //
-//							if (total > 1024) {
-//								total /= 1024;
-//								overlay_data += Math.round(total) + 'G';
-//							} else {
-//								overlay_data += Math.round(total);
-//							}
-							if (total > 1024) { total = Math.round(total / 1024) +'G' } else total = Math.round(total);
-						}
-						var eventual_alert = (device.used / (device.used + device.available) > 0.8) ? ' alert' : '';
-						var used = device.available ? '<div class="indicator'+ eventual_alert +'" style="width: '+ Math.log(device.total)/Math.log(total_max)*110 +'%" data-overlay="'+ overlay_data +'"><div style="width: '+ Math.round(100*device.used/(device.used + device.available)) +'%">&nbsp;</div></div>' : "";
-					var url = '/' + ( device.mounted ? 'umount' : 'mount' ) + '?mountpoint=' + device.mountpoint;
-						
-						var icon = (device.mounted ? '<img class="connected" src="/icons/transparent.png" alt="" />' : '<img class="disconnected" src="/icons/transparent.png" alt="" />');
-						var passive_icon = (device.mounted ? '<img class="connected_passive" src="/icons/transparent.png" alt="" />' : '<img class="disconnected_passive" src="/icons/transparent.png" alt="" />');
-						
-						$('#devices table').append("<tr id='" + device.mountpoint + "'><td class='label'>" + (device.label || "") + "</td><td class='mountpoint'>" + device.mountpoint + "</td><td class='type'>" + device.type	+ "</td><td class='mounted'>" + (device.label ? ("<a class='mounted' href='" + url + "'>" + icon + "</a>") : passive_icon ) + "</td><!--<td>"+ total +"</td>--><td>" + used + "</td></tr>");
-					});
-					
-					$('#devices table .indicator[data-overlay]').each( function(index, indicator) {
-						indicator = $(indicator)
-						var overlay = indicator.attr('data-overlay');
-						$('#devices').append('<div class="overlay" style="position: absolute; top: '+ indicator.position().top +'px; left: '+ indicator.position().left +'px; width: '+ indicator.width() +'px; height: '+ indicator.height() +'px">'+ overlay +'</div>');
-					});
-				}});
+//              if (total > 1024) {
+//                total /= 1024;
+//                overlay_data += Math.round(total) + 'G';
+//              } else {
+//                overlay_data += Math.round(total);
+//              }
+              if (total > 1024) { total = Math.round(total / 1024) +'G' } else total = Math.round(total);
+            }
+            var eventual_alert = (device.used / (device.used + device.available) > 0.8) ? ' alert' : '';
+            var used = device.available ? '<div class="indicator'+ eventual_alert +'" style="width: '+ Math.log(device.total)/Math.log(total_max)*110 +'%" data-overlay="'+ overlay_data +'"><div style="width: '+ Math.round(100*device.used/(device.used + device.available)) +'%">&nbsp;</div></div>' : "";
+          var url = '/' + ( device.mounted ? 'umount' : 'mount' ) + '?mountpoint=' + device.mountpoint;
+            
+            var icon = (device.mounted ? '<img class="connected" src="/icons/transparent.png" alt="" />' : '<img class="disconnected" src="/icons/transparent.png" alt="" />');
+            var passive_icon = (device.mounted ? '<img class="connected_passive" src="/icons/transparent.png" alt="" />' : '<img class="disconnected_passive" src="/icons/transparent.png" alt="" />');
+            
+            $('#devices table').append("<tr id='" + device.mountpoint + "'><td class='label'>" + (device.label || "") + "</td><td class='mountpoint'>" + device.mountpoint + "</td><td class='type'>" + device.type  + "</td><td class='mounted'>" + (device.label ? ("<a class='mounted' href='" + url + "'>" + icon + "</a>") : passive_icon ) + "</td><!--<td>"+ total +"</td>--><td>" + used + "</td></tr>");
+          });
+          
+          $('#devices table .indicator[data-overlay]').each( function(index, indicator) {
+            indicator = $(indicator)
+            var overlay = indicator.attr('data-overlay');
+            $('#devices').append('<div class="overlay" style="position: absolute; top: '+ indicator.position().top +'px; left: '+ indicator.position().left +'px; width: '+ indicator.width() +'px; height: '+ indicator.height() +'px">'+ overlay +'</div>');
+          });
+        }});
 
-				$.ajax({url: '/services', method: 'GET', success: function(services) {
-					_(services).each(function(service) {
-						var status = service.running ? '<div class="status started"><a href="/stop/' + service.name + '"><img src="/icons/bolt.png" /></a></div>' : '<div class="status stopped"><a href="/start/' + service.name + '"><img src="/icons/clock.png" /></a></div>';
-						$("#services").append('<div class="service" id="service-' + service.name +'"><div class="name">' + service.name + '</div>' + status + '</div>');
-					});
-				}});
-				
-			});
-		</script>
-		<link rel="shortcut icon" href="/icons/bolt.png" type="image/png" />
-		<title>Appload HQ</title>
-	</head>
-	<body>
-	  <!--<div id="memory-chart" style="width:550px;height:300px;"></div>-->
-		<div id="memory"></div>
-		<div id="status"></div>
-		<div id="devices">
-			<table></table>
-		</div>
-		<div id="services"></div>
-		<div id="packages"></div>
-		
-	</body>
+        $.ajax({url: '/services', method: 'GET', success: function(services) {
+          _(services).each(function(service) {
+            var status = service.running ? '<div class="status started"><a href="/stop/' + service.name + '"><img src="/icons/bolt.png" /></a></div>' : '<div class="status stopped"><a href="/start/' + service.name + '"><img src="/icons/clock.png" /></a></div>';
+            $("#services").append('<div class="service" id="service-' + service.name +'"><div class="name">' + service.name + '</div>' + status + '</div>');
+          });
+        }});
+
+      });
+    </script>
+    
+    <link rel="shortcut icon" href="/icons/bolt.png" type="image/png" />
+    <title>Appload HQ</title>
+  </head>
+  <body>
+    <!--<div id="memory-chart" style="width:550px;height:300px;"></div>-->
+    <div id="memory"></div>
+    <div id="status"></div>
+    
+<div id="nginx"><textarea id="code" name="code">
+user nginx nginx;
+worker_processes 1;
+
+error_log /var/log/nginx/error_log info;
+
+events {  worker_connections 1024;
+  use epoll;
+}
+
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+
+  log_format main
+    '$remote_addr - $remote_user [$time_local] '
+    '"$request" $status $bytes_sent '
+    '"$http_referer" "$http_user_agent" '
+    '"$gzip_ratio"';
+
+  client_header_timeout 10m;
+  client_body_timeout 10m;
+  send_timeout 10m;
+
+  connection_pool_size 256;
+  client_header_buffer_size 1k;
+  large_client_header_buffers 4 2k;
+  request_pool_size 4k;
+
+  gzip on;
+  gzip_min_length 1100;
+  gzip_buffers 4 8k;
+  gzip_types text/plain;
+
+  output_buffers 1 32k;
+  postpone_output 1460;
+
+  sendfile on;
+  tcp_nopush on;
+  tcp_nodelay on;
+
+  keepalive_timeout 75 20;
+
+  ignore_invalid_headers on;
+
+  index index.html;
+  
+  error_page 404 http://appload.pl;
+
+  server {
+    listen 80;
+    server_name appload.pl www.appload.pl;
+    root  /home/appload/public;
+  }
+  
+
+  # Rack, Unicorn
+
+  upstream flow_unicorn {
+    server unix:/home/flow/tmp/sockets/unicorn.sock fail_timeout=0;
+  }
+
+  server {
+    listen 80;
+    server_name flow.appload.pl www.flow.appload.pl;
+
+    root /home/flow/public;
+
+    location / {
+      #proxy_set_header Host $http_host;
+      #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+      if (!-f $request_filename) {
+        proxy_pass http://flow_unicorn;
+      }
+    }
+  }
+
+  upstream kanban_unicorn {
+    server unix:/home/kanban/tmp/sockets/unicorn.sock fail_timeout=0;
+  }
+
+  server {
+    listen 80;
+    server_name kanban.appload.pl www.kanban.appload.pl;
+
+    root /home/kanban/public;
+
+    location / {
+      #proxy_set_header Host $http_host;
+      #proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      #proxy_redirect off;
+
+      if (!-f $request_filename) {
+        proxy_pass http://kanban_unicorn;
+      }
+    }
+  }
+
+  upstream koliber_unicorn {
+    server unix:/home/koliber/tmp/sockets/unicorn.sock fail_timeout=0;
+  }
+
+  server {
+    listen 80;
+    client_max_body_size 4G;
+    server_name koliber.appload.pl www.koliber.appload.pl koliber.vroc.pl www.koliber.vroc.pl;
+
+    root /home/koliber/public;
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+      if (!-f $request_filename) {
+        proxy_pass http://koliber_unicorn;
+      }
+    }
+  }
+  
+  # Rack, other
+
+  server {
+    listen 80;
+    server_name zaqpki.pl www.zaqpki.pl;
+    rewrite ^/(.*) http://zaqpkipl.appspot.com/$1 permanent;
+  }
+
+  # Python
+
+  server {
+    server_name reader.appload.pl www.reader.appload.pl;
+
+    location / {
+      proxy_pass http://localhost:8080;
+      proxy_read_timeout 600;
+    }
+  }
+
+
+  # Hypertext Preprocessor
+
+  server {
+    listen 80;
+    server_name eldesign.eu www.eldesign.eu;
+
+    root /home/eldesign;
+    index index.php;
+  
+    location / {
+      if (-f $request_filename) {
+        break;
+      }
+
+      if (!-e $request_filename) {
+        rewrite ^/([a-z]+)$ /$1.php last;
+        break;
+      }
+    }
+
+    location ~ ^/([a-z]+).php {
+      include /etc/nginx/fastcgi_params;
+
+      fastcgi_pass   localhost:9000;
+      fastcgi_index  $1.php;
+    }
+
+    error_page  404  /index.php;
+  }
+  
+  server {
+    listen 80;
+    server_name www.fotowrocek.pl fotowrocek.pl photo.appload.pl;
+
+    root /home/photo;
+    index index.php;
+  
+    location / {
+      if (-f $request_filename) {
+        break;
+      }
+
+      if (!-e $request_filename) {
+        rewrite ^(.+)$ /index.php?$1 last;
+        break;
+      }
+    }
+
+    location ~ ^/index.php {
+      include /etc/nginx/fastcgi_params;
+
+      fastcgi_pass   localhost:9000;
+      fastcgi_index  index.php;
+    }
+
+    location ~ ^/photo/([a-z0-9])*$ {
+      expires           30d;
+    }
+
+    location ~ ^.+\.(jpg|jpeg|css|png|js|ico|html|xml)$ {
+      expires           30d;
+    }
+  
+    error_page  404  /index.php;
+  }
+  
+  server {
+    listen 80;
+    server_name maciek.wroclaw.pl share.appload.pl www.maciek.wroclaw.pl www.share.appload.pl;
+
+    root /home/share/public;
+    index index.php;
+  
+    location / {
+      if (-f $request_filename) {
+        break;
+      }
+    }
+
+    location ~ ^/index.php {
+      include /etc/nginx/fastcgi_params;
+
+      fastcgi_pass localhost:9000;
+      fastcgi_index index.php;
+    }
+
+    location ~ ^/photo/([a-z0-9])*$ {
+      expires 30d;
+    }
+
+    location ~ ^.+\.(jpg|jpeg|css|png|js|ico|html|xml)$ {
+      expires 30d;
+    }
+  
+    error_page 404 /index.php;
+  }
+
+  server {
+    listen 80;
+    server_name pg.appload.pl www.pg.appload.pl;
+    root /home/pg;
+    
+    index index.php index.html index.htm;
+ 
+    location ~* \.(jpg|jpeg|gif|css|png|js|ico|html)$ {
+      access_log off;
+      expires max;
+    }
+ 
+    location ~ \.php$ {
+      include /etc/nginx/fastcgi_params;
+      fastcgi_pass localhost:9000;
+    }
+  }
+
+  server {
+    listen 80;
+    server_name play.appload.pl www.play.appload.pl;
+    root /home/play/public;
+    
+    index index.php index.html index.htm;
+ 
+    location ~* \.(jpg|jpeg|gif|css|png|js|ico|html)$ {
+      access_log off;
+      expires max;
+    }
+ 
+    location ~ \.php$ {
+      include /etc/nginx/fastcgi_params;
+      fastcgi_pass localhost:9000;
+    }
+  }
+
+
+  # Node.js
+
+  server {
+    server_name hq.appload.pl;
+
+    location / {
+      proxy_pass http://192.168.1.5:5000;
+    }
+  }
+
+
+  # Redirection
+  
+  server {
+    server_name couchdb.appload.pl;
+
+    location / {
+      proxy_pass http://localhost:5984;
+    }
+  }
+  
+  server {
+    server_name stats.appload.pl www.stats.appload.pl;
+    rewrite ^(.*) https://www.google.com/accounts/ServiceLogin?service=analytics&passive=true&nui=1&hl=en&continue=https://www.google.com/analytics/settings/&followup=https://www.google.com/analytics/settings/ permanent;
+  }
+  
+  server {
+    server_name maciek.appload.pl;
+
+    location / {
+      proxy_pass http://192.168.1.3:80;
+    }
+  }
+
+  server {
+    server_name rav.appload.pl;
+
+    location / {
+      proxy_pass http://192.168.1.2:8080;
+    }
+  }
+  
+  server {
+    listen 80;
+    server_name test.zaqpki.pl;
+    location / {
+      proxy_pass        http://localhost:3000;
+       proxy_set_header  X-Real-IP  $remote_addr;
+    }
+  }
+
+}
+</textarea></div>
+
+    <div id="sensors"></div>
+    <div id="storage"></div>
+    <div id="devices">
+      <table></table>
+    </div>
+    <div id="services"></div>
+    <div id="packages"></div>
+
+        <script>
+          var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+            lineNumbers: true,
+            matchBrackets: true,
+            mode: "text/nginx",
+              onCursorActivity: function() {
+                editor.setLineClass(hlLine, null);
+                hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
+              }
+          })
+          
+          editor.setOption("theme", "night");
+          var hlLine = editor.setLineClass(0, "activeline");
+        </script>
+    
+  </body>
 </html>
 

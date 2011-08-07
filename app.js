@@ -39,6 +39,12 @@ app.configure(function(){
   
 });
 
+//app.get('/nginx', function(req, res, next) {
+//  fs.readFile('/etc/passwd', function (err, data) {
+//    if (err) throw err;
+//    console.log(data);
+//  });
+//});
 
 app.get('/test', function(req, res, next) {
   res.send('c');
@@ -74,7 +80,7 @@ app.get('/packages', function(req, res, next) {
 });
 
 function packages(callback) {
-  exec('cat /etc/world', function(error, stdout, stderr) {
+  exec('cat /var/lib/portage/world', function(error, stdout, stderr) {
     if (error) { return callback(error, null); }
     var lines = stdout.split("\n");
     var packages = {};

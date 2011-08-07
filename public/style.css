@@ -3,6 +3,11 @@ table { width: 100%; }
 html, table { font-family: DejaVu Sans, sansserif; font-size: 13px; }
 td { padding: 2px 10px; }
 
+a, a:link {
+  text-decoration: none;
+  color: black;
+}
+
 #memory, #memorychart, #devices, #packages, #services, #status, #sensors, #storage, #nginx {
 	width: 550px;
 	margin: 28px auto;

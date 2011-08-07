@@ -191,7 +191,7 @@ CodeMirror.defineMode("clike", function(config, parserConfig) {
 
   CodeMirror.defineMIME("text/nginx", {
     name: "clike",
-    keywords: words("access_log break client_body_timeout client_header_timeout client_max_body_size client_header_buffer_size connection_pool_size default_type error_log error_page expires fastcgi_pass fastcgi_index fail_timeout gzip gzip_buffers gzip_min_length gzip_ratio gzip_types ignore_invalid_headers include index keepalive_timeout last large_client_header_buffers listen log_format use user output_buffers postpone_output proxy_pass proxy_read_timeout proxy_set_header rewrite request_pool_size root server_name sendfile send_timeout tcp_nodelay tcp_nopush worker_connections worker_processes"),
+    keywords: words("access_log accept_mutex break client_body_timeout client_header_timeout client_max_body_size client_header_buffer_size connection_pool_size default_type error_log error_page expires fastcgi_pass fastcgi_index fail_timeout gzip gzip_buffers gzip_disable gzip_http_version gzip_min_length gzip_proxied gzip_ratio gzip_types ignore_invalid_headers include index keepalive_timeout last large_client_header_buffers listen log_format use user output_buffers postpone_output proxy_pass proxy_read_timeout proxy_set_header rewrite request_pool_size root server_name sendfile send_timeout tcp_nodelay tcp_nopush try_files worker_connections worker_processes"),
     blockKeywords: words(""),
     atoms: words("null on off max"),
     hooks: {"#": cppHook}
